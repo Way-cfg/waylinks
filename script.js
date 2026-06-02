@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (delta > 50) {
       frameDrops++;
-      if (frameDrops > 5) {
+      if (frameDrops >= 5) {
         glow.remove();
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseleave', handleMouseLeave);
