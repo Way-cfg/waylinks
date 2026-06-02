@@ -3,12 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!glow) return;
 
   let rafId = null;
+  let mouseX = 0;
+  let mouseY = 0;
 
   const handleMouseMove = (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
     if (rafId) return;
     rafId = requestAnimationFrame(() => {
-      glow.style.left = e.clientX + 'px';
-      glow.style.top = e.clientY + 'px';
+      glow.style.left = mouseX + 'px';
+      glow.style.top = mouseY + 'px';
       if (!glow.classList.contains('visible')) {
         glow.classList.add('visible');
       }
@@ -23,14 +27,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('mousemove', handleMouseMove, { passive: true });
   document.addEventListener('mouseleave', handleMouseLeave);
 
-  // Detect low performance: disable if frame rate drops
-  let lastTime = performance.now();
   let frameDrops = 0;
+  let lastTime = 0;
 
-  const checkPerformance = () => {
-    const now = performance.now();
+  const checkPerformance = (now) => {
+    if (lastTime === 0) {
+      lastTime = now;
+      requestAnimationFrame(checkPerformance);
+      return;
+    }
+
     const delta = now - lastTime;
-    lastTime = now;
 
     if (delta > 50) {
       frameDrops++;
@@ -41,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
     }
+    lastTime = now;
     requestAnimationFrame(checkPerformance);
   };
 
