@@ -58,6 +58,9 @@ class ParticleBackground {
     const my = this.mouse.y;
 
     for (const p of this.particles) {
+      p.vx += (Math.random() - 0.5) * 0.04;
+      p.vy += (Math.random() - 0.5) * 0.04;
+
       p.x += p.vx;
       p.y += p.vy;
 
