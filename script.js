@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const glow = document.getElementById('mouseGlow');
   if (!glow) return;
+  if (!matchMedia('(hover: hover)').matches) return;
 
   let rafId = null;
   let mouseX = 0;
@@ -31,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastTime = 0;
 
   const checkPerformance = (now) => {
-    if (lastTime === 0) {
+    if (!lastTime) {
       lastTime = now;
       requestAnimationFrame(checkPerformance);
       return;

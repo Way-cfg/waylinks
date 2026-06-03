@@ -43,6 +43,7 @@ body {
   background:
     radial-gradient(600px circle at 20% 30%, rgba(255, 106, 0, 0.06), transparent 50%),
     radial-gradient(400px circle at 80% 70%, rgba(255, 106, 0, 0.04), transparent 50%);
+  will-change: transform;
   animation: bgDrift 15s ease-in-out infinite alternate;
 }
 
@@ -141,6 +142,11 @@ body {
   transform: translateY(-2px);
 }
 
+.link-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -227,5 +233,29 @@ body {
 
   .container {
     max-width: 460px;
+  }
+}
+
+/* Accessibility: disable animations for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .bg-glow,
+  .logo,
+  .link-card {
+    animation: none;
+  }
+
+  .bg-glow {
+    transform: none;
+  }
+
+  .link-card {
+    transition: none;
+  }
+}
+
+/* Touch devices: hide mouse glow */
+@media (hover: none) {
+  .mouse-glow {
+    display: none;
   }
 }
