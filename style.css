@@ -68,7 +68,22 @@ body {
 
 /* Avatar */
 .avatar-wrapper {
-  margin-bottom: 24px;
+  position: relative;
+  width: 120px;
+  margin: 0 auto 24px;
+}
+
+.avatar-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 30%, var(--accent), transparent 70%);
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .avatar {
@@ -76,8 +91,8 @@ body {
   height: 120px;
   border-radius: 50%;
   display: block;
-  margin: 0 auto;
   object-fit: cover;
+  position: relative;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 0 0 2px rgba(255, 255, 255, 0.1);
@@ -94,15 +109,19 @@ body {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -1px;
-  color: rgba(255, 255, 255, 0.95);
   margin-bottom: 8px;
   line-height: 1.2;
-  animation: nameBreathe 4s ease-in-out infinite;
+  background: linear-gradient(90deg, #fff 0%, var(--accent) 25%, #fff 50%, var(--accent) 75%, #fff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: nameShimmer 4s ease-in-out infinite;
 }
 
-@keyframes nameBreathe {
-  0%, 100% { opacity: 0.95; }
-  50% { opacity: 1; text-shadow: 0 0 30px rgba(255, 106, 0, 0.15); }
+@keyframes nameShimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
 }
 
 /* Tagline */
@@ -141,6 +160,7 @@ body {
   color: var(--text);
   font-size: 15px;
   font-weight: 500;
+  overflow: hidden;
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
@@ -152,6 +172,28 @@ body {
   cursor: pointer;
 }
 
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 106, 0, 0.06) 40%,
+    rgba(255, 106, 0, 0.12) 50%,
+    rgba(255, 106, 0, 0.06) 60%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: cardShimmer 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes cardShimmer {
+  0%, 100% { background-position: 200% center; }
+  50% { background-position: -50% center; }
+}
+
 @keyframes cardBorderGlow {
   0%, 100% { border-color: var(--card-border); }
   50% { border-color: rgba(255, 106, 0, 0.15); }
@@ -159,9 +201,9 @@ body {
 
 .card:hover {
   transform: translateY(-2px);
-  border-color: var(--card-border-hover);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-color: var(--accent);
+  background: rgba(255, 106, 0, 0.06);
+  box-shadow: 0 4px 24px rgba(255, 106, 0, 0.15), inset 0 0 20px rgba(255, 106, 0, 0.03);
 }
 
 .card:active {
@@ -186,6 +228,8 @@ body {
 
 /* Accent dot */
 .card-dot {
+  position: relative;
+  z-index: 1;
   width: 3px;
   height: 3px;
   border-radius: 50%;
@@ -201,6 +245,8 @@ body {
 
 /* Icon */
 .card-icon {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -223,12 +269,16 @@ body {
 
 /* Label */
 .card-label {
+  position: relative;
+  z-index: 1;
   flex: 1;
   text-align: left;
 }
 
 /* Arrow */
 .card-arrow {
+  position: relative;
+  z-index: 1;
   color: var(--text-muted);
   font-size: 16px;
   transition: transform 0.2s ease, color 0.2s ease;
@@ -267,6 +317,10 @@ body {
 @media (max-width: 480px) {
   .container {
     padding: 40px 20px;
+  }
+
+  .avatar-wrapper {
+    width: 96px;
   }
 
   .avatar {
@@ -321,6 +375,19 @@ body {
     animation: none !important;
     transition: none !important;
     transform: none !important;
+  }
+
+  .avatar-wrapper::before {
+    display: none;
+  }
+
+  .card::after {
+    display: none;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 
   .card:hover {
