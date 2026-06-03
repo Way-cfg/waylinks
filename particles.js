@@ -4,9 +4,12 @@ class ParticleBackground {
     this.ctx = canvas.getContext('2d');
     this.particles = [];
     this.mouse = { x: -1000, y: -1000 };
+    this.hoverTarget = null;
     this.rafId = null;
     this.boundResize = this.resize.bind(this);
     this.boundMove = this.onMouseMove.bind(this);
+    this.boundHoverIn = this.onCardHover.bind(this);
+    this.boundHoverOut = this.onCardLeave.bind(this);
 
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -17,6 +20,10 @@ class ParticleBackground {
     this.resize();
     window.addEventListener('resize', this.boundResize);
     document.addEventListener('pointermove', this.boundMove);
+    document.querySelectorAll('.card').forEach(el => {
+      el.addEventListener('mouseenter', this.boundHoverIn);
+      el.addEventListener('mouseleave', this.boundHoverOut);
+    });
     this.createParticles();
     this.animate();
   }
@@ -27,15 +34,15 @@ class ParticleBackground {
   }
 
   createParticles() {
-    const count = Math.min(120, Math.floor((window.innerWidth * window.innerHeight) / 10000));
+    const count = Math.min(160, Math.floor((window.innerWidth * window.innerHeight) / 8000));
     this.particles = [];
     for (let i = 0; i < count; i++) {
       this.particles.push({
         x: Math.random() * this.canvas.width,
         y: Math.random() * this.canvas.height,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: (Math.random() - 0.5) * 0.6,
-        r: Math.random() * 2 + 1
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2.5 + 1
       });
     }
   }
@@ -43,6 +50,18 @@ class ParticleBackground {
   onMouseMove(e) {
     this.mouse.x = e.clientX;
     this.mouse.y = e.clientY;
+  }
+
+  onCardHover(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    this.hoverTarget = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+  }
+
+  onCardLeave() {
+    this.hoverTarget = null;
   }
 
   animate() {
@@ -58,8 +77,31 @@ class ParticleBackground {
     const my = this.mouse.y;
 
     for (const p of this.particles) {
-      p.vx += (Math.random() - 0.5) * 0.04;
-      p.vy += (Math.random() - 0.5) * 0.04;
+      p.vx += (Math.random() - 0.5) * 0.06;
+      p.vy += (Math.random() - 0.5) * 0.06;
+
+      let targetX = mx;
+      let targetY = my;
+      let attractStrength = 0.006;
+
+      if (this.hoverTarget) {
+        const hdx = this.hoverTarget.x - mx;
+        const hdy = this.hoverTarget.y - my;
+        const hdist = Math.sqrt(hdx * hdx + hdy * hdy);
+        if (hdist > 1) {
+          targetX = mx + hdx * 0.3;
+          targetY = my + hdy * 0.3;
+          attractStrength = 0.012;
+        }
+      }
+
+      const dx = targetX - p.x;
+      const dy = targetY - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 300 && dist > 0) {
+        p.vx += (dx / dist) * attractStrength * (300 - dist) / 300;
+        p.vy += (dy / dist) * attractStrength * (300 - dist) / 300;
+      }
 
       p.x += p.vx;
       p.y += p.vy;
@@ -67,33 +109,18 @@ class ParticleBackground {
       if (p.x < 0 || p.x > w) p.vx *= -1;
       if (p.y < 0 || p.y > h) p.vy *= -1;
 
-      const dx = p.x - mx;
-      const dy = p.y - my;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const repelRadius = 100;
-      if (dist < repelRadius && dist > 0) {
-        const force = (repelRadius - dist) / repelRadius;
-        p.vx += (dx / dist) * force * 0.15;
-        p.vy += (dy / dist) * force * 0.15;
-      }
-
-      p.vx *= 0.99;
-      p.vy *= 0.99;
+      p.vx *= 0.97;
+      p.vy *= 0.97;
     }
   }
 
   draw() {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    ctx.clearRect(0, 0, w, h);
 
-    ctx.fillStyle = 'rgba(255, 106, 0, 1)';
-    for (const p of this.particles) {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.strokeStyle = 'rgba(255, 106, 0, 0.2)';
+    ctx.strokeStyle = 'rgba(255, 106, 0, 0.3)';
     ctx.lineWidth = 1;
     for (let i = 0; i < this.particles.length; i++) {
       for (let j = i + 1; j < this.particles.length; j++) {
@@ -102,7 +129,7 @@ class ParticleBackground {
         const dx = a.x - b.x;
         const dy = a.y - b.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) {
+        if (dist < 120) {
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
@@ -110,6 +137,16 @@ class ParticleBackground {
         }
       }
     }
+
+    ctx.shadowColor = 'rgba(255, 106, 0, 0.6)';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#ff6a00';
+    for (const p of this.particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
   }
 
   destroy() {
