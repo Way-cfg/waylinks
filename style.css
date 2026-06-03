@@ -81,6 +81,12 @@ body {
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     0 0 0 2px rgba(255, 255, 255, 0.1);
+  animation: avatarGlow 4s ease-in-out infinite;
+}
+
+@keyframes avatarGlow {
+  0%, 100% { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.1); }
+  50% { box-shadow: 0 8px 40px rgba(255, 106, 0, 0.15), 0 0 0 3px rgba(255, 106, 0, 0.2); }
 }
 
 /* Name */
@@ -91,6 +97,12 @@ body {
   color: rgba(255, 255, 255, 0.95);
   margin-bottom: 8px;
   line-height: 1.2;
+  animation: nameBreathe 4s ease-in-out infinite;
+}
+
+@keyframes nameBreathe {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 1; text-shadow: 0 0 30px rgba(255, 106, 0, 0.15); }
 }
 
 /* Tagline */
@@ -100,6 +112,12 @@ body {
   font-weight: 400;
   letter-spacing: 0.2px;
   line-height: 1.5;
+  animation: taglineFade 5s ease-in-out infinite;
+}
+
+@keyframes taglineFade {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 /* Links */
@@ -128,9 +146,15 @@ body {
     border-color 0.2s ease,
     background 0.2s ease,
     box-shadow 0.2s ease;
-  animation: cardFadeIn 0.6s var(--ease) both;
-  animation-delay: calc(0.9s + (var(--delay) - 1) * 0.15s);
+  animation: cardFadeIn 0.6s var(--ease) both,
+             cardBorderGlow 4s ease-in-out infinite;
+  animation-delay: calc(0.9s + (var(--delay) - 1) * 0.15s), calc(0.9s + (var(--delay) - 1) * 0.15s);
   cursor: pointer;
+}
+
+@keyframes cardBorderGlow {
+  0%, 100% { border-color: var(--card-border); }
+  50% { border-color: rgba(255, 106, 0, 0.15); }
 }
 
 .card:hover {
@@ -185,6 +209,12 @@ body {
   color: var(--text-muted);
   flex-shrink: 0;
   transition: color 0.2s ease;
+  animation: iconBreathe 4s ease-in-out infinite;
+}
+
+@keyframes iconBreathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 .card:hover .card-icon {
@@ -205,11 +235,18 @@ body {
   flex-shrink: 0;
   width: 16px;
   text-align: right;
+  animation: arrowSlide 3s ease-in-out infinite;
+}
+
+@keyframes arrowSlide {
+  0%, 100% { transform: translateX(0); opacity: 0.5; }
+  50% { transform: translateX(3px); opacity: 1; }
 }
 
 .card:hover .card-arrow {
   transform: translateX(2px);
   color: var(--accent);
+  animation: none;
 }
 
 /* Footer */
@@ -275,7 +312,12 @@ body {
   .hero,
   .card,
   .footer,
-  .card-dot {
+  .card-dot,
+  .avatar,
+  .name,
+  .tagline,
+  .card-icon,
+  .card-arrow {
     animation: none !important;
     transition: none !important;
     transform: none !important;
