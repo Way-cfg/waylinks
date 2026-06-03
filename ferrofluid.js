@@ -1,4 +1,5 @@
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
+console.log('[Ferrofluid] OGL loaded');
 
 const vertex = `
 attribute vec2 position;
@@ -226,7 +227,7 @@ window.initFerrofluid = function (container) {
     uSharpness: { value: 2.5 },
     uShimmer: { value: 1.2 },
     uGlow: { value: 1.5 },
-    uOpacity: { value: 0.35 },
+    uOpacity: { value: 0.6 },
     uMouseEnabled: { value: 1 },
     uMouseStrength: { value: 0.8 },
     uMouseRadius: { value: 0.35 }
