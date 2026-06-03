@@ -27,15 +27,15 @@ class ParticleBackground {
   }
 
   createParticles() {
-    const count = Math.min(80, Math.floor((window.innerWidth * window.innerHeight) / 15000));
+    const count = Math.min(120, Math.floor((window.innerWidth * window.innerHeight) / 10000));
     this.particles = [];
     for (let i = 0; i < count; i++) {
       this.particles.push({
         x: Math.random() * this.canvas.width,
         y: Math.random() * this.canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        r: Math.random() * 1.5 + 0.5
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        r: Math.random() * 2 + 1
       });
     }
   }
@@ -70,12 +70,12 @@ class ParticleBackground {
       const repelRadius = 100;
       if (dist < repelRadius && dist > 0) {
         const force = (repelRadius - dist) / repelRadius;
-        p.vx += (dx / dist) * force * 0.08;
-        p.vy += (dy / dist) * force * 0.08;
+        p.vx += (dx / dist) * force * 0.15;
+        p.vy += (dy / dist) * force * 0.15;
       }
 
-      p.vx *= 0.98;
-      p.vy *= 0.98;
+      p.vx *= 0.99;
+      p.vy *= 0.99;
     }
   }
 
@@ -83,15 +83,15 @@ class ParticleBackground {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    ctx.fillStyle = 'rgba(255, 106, 0, 0.5)';
+    ctx.fillStyle = 'rgba(255, 106, 0, 1)';
     for (const p of this.particles) {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    ctx.strokeStyle = 'rgba(255, 106, 0, 0.08)';
-    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = 'rgba(255, 106, 0, 0.2)';
+    ctx.lineWidth = 1;
     for (let i = 0; i < this.particles.length; i++) {
       for (let j = i + 1; j < this.particles.length; j++) {
         const a = this.particles[i];
@@ -99,7 +99,7 @@ class ParticleBackground {
         const dx = a.x - b.x;
         const dy = a.y - b.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 130) {
+        if (dist < 150) {
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
