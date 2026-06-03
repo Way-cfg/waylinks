@@ -169,7 +169,7 @@ body {
   font-weight: 500;
   overflow: hidden;
   transition:
-    transform 0.2s ease,
+    transform 0.3s ease,
     border-color 0.2s ease,
     background 0.2s ease,
     box-shadow 0.2s ease;
@@ -207,14 +207,13 @@ body {
 }
 
 .card:hover {
-  transform: translateY(-3px) scale(1.02);
   border-color: var(--accent);
   background: rgba(255, 106, 0, 0.08);
   box-shadow: 0 8px 32px rgba(255, 106, 0, 0.2), inset 0 0 30px rgba(255, 106, 0, 0.05);
 }
 
 .card:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 .card:focus {
@@ -401,9 +400,10 @@ body {
   .card {
     background: rgba(255, 255, 255, 0.04);
     border-color: rgba(255, 255, 255, 0.08);
+    transform: none !important;
   }
 
   .card:hover {
-    transform: none;
+    transform: none !important;
   }
 }

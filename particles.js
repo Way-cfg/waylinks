@@ -159,3 +159,31 @@ document.addEventListener('DOMContentLoaded', () => {
     new ParticleBackground(canvas);
   }
 });
+
+// Card 3D tilt
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.querySelectorAll('.card').forEach(card => {
+    let ticking = false;
+    card.addEventListener('mousemove', (e) => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          const rx = ((y - cy) / cy) * -5;
+          const ry = ((x - cx) / cx) * 5;
+          card.style.transition = 'transform 0.05s';
+          card.style.transform = `perspective(600px) translateY(-3px) scale(1.02) rotateX(${rx}deg) rotateY(${ry}deg)`;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = '';
+      card.style.transform = '';
+    });
+  });
+}
