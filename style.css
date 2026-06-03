@@ -55,15 +55,40 @@ body {
   text-align: center;
 }
 
+.container::before {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 106, 0, 0.06), transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+  animation: ambientPulse 6s ease-in-out infinite;
+}
+
+@keyframes ambientPulse {
+  0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
 /* Hero */
 .hero {
   margin-bottom: 40px;
-  animation: heroFade 0.8s var(--ease) both;
+  animation: heroFade 0.8s var(--ease) both,
+             heroFloat 6s ease-in-out 0.8s infinite;
 }
 
 @keyframes heroFade {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 /* Avatar */
@@ -132,11 +157,12 @@ body {
   letter-spacing: 0.2px;
   line-height: 1.5;
   animation: taglineFade 5s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(255, 106, 0, 0.1);
 }
 
 @keyframes taglineFade {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.6; text-shadow: 0 0 20px rgba(255, 106, 0, 0.1); }
+  50% { opacity: 1; text-shadow: 0 0 30px rgba(255, 106, 0, 0.25); }
 }
 
 /* Links */
@@ -200,10 +226,10 @@ body {
 }
 
 .card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.02);
   border-color: var(--accent);
-  background: rgba(255, 106, 0, 0.06);
-  box-shadow: 0 4px 24px rgba(255, 106, 0, 0.15), inset 0 0 20px rgba(255, 106, 0, 0.03);
+  background: rgba(255, 106, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(255, 106, 0, 0.2), inset 0 0 30px rgba(255, 106, 0, 0.05);
 }
 
 .card:active {
@@ -230,17 +256,18 @@ body {
 .card-dot {
   position: relative;
   z-index: 1;
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--accent);
   flex-shrink: 0;
   animation: dotPulse 3s ease-in-out infinite;
+  box-shadow: 0 0 6px var(--accent);
 }
 
 @keyframes dotPulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.6; box-shadow: 0 0 6px var(--accent); }
+  50% { opacity: 1; box-shadow: 0 0 12px var(--accent); }
 }
 
 /* Icon */
@@ -360,6 +387,10 @@ body {
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   #particle-bg {
+    display: none;
+  }
+
+  .container::before {
     display: none;
   }
 
