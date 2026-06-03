@@ -35,19 +35,16 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle background depth */
-.bg-depth {
+/* WebGL Ferrofluid background */
+.ferrofluid-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(800px circle at 50% 30%, rgba(255, 106, 0, 0.03), transparent 60%);
-  animation: depthDrift 30s ease-in-out infinite alternate;
 }
 
-@keyframes depthDrift {
-  0% { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.05) translate(1%, -1%); }
+.ferrofluid-bg canvas {
+  pointer-events: none;
 }
 
 /* Container */
@@ -273,7 +270,10 @@ body {
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .bg-depth,
+  .ferrofluid-bg {
+    display: none;
+  }
+
   .hero,
   .card,
   .footer,
