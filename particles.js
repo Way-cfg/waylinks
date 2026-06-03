@@ -8,8 +8,6 @@ class ParticleBackground {
     this.rafId = null;
     this.boundResize = this.resize.bind(this);
     this.boundMove = this.onMouseMove.bind(this);
-    this.boundHoverIn = this.onCardHover.bind(this);
-    this.boundHoverOut = this.onCardLeave.bind(this);
 
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -20,12 +18,16 @@ class ParticleBackground {
     this.resize();
     window.addEventListener('resize', this.boundResize);
     document.addEventListener('pointermove', this.boundMove);
-    document.querySelectorAll('.card').forEach(el => {
-      el.addEventListener('mouseenter', this.boundHoverIn);
-      el.addEventListener('mouseleave', this.boundHoverOut);
-    });
+    this.addCardListeners();
     this.createParticles();
     this.animate();
+  }
+
+  addCardListeners() {
+    document.querySelectorAll('.card').forEach(el => {
+      el.addEventListener('mouseenter', (e) => this.onCardHover(e));
+      el.addEventListener('mouseleave', () => this.onCardLeave());
+    });
   }
 
   resize() {
@@ -149,17 +151,11 @@ class ParticleBackground {
     ctx.shadowBlur = 0;
   }
 
-  destroy() {
-    if (this.rafId) cancelAnimationFrame(this.rafId);
-    window.removeEventListener('resize', this.boundResize);
-    document.removeEventListener('pointermove', this.boundMove);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('particle-bg');
   if (canvas) {
-    const bg = new ParticleBackground(canvas);
-    window.__particleBg = bg;
+    new ParticleBackground(canvas);
   }
 });
