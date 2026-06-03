@@ -77,12 +77,12 @@ class ParticleBackground {
     const my = this.mouse.y;
 
     for (const p of this.particles) {
-      p.vx += (Math.random() - 0.5) * 0.1;
-      p.vy += (Math.random() - 0.5) * 0.1;
+      p.vx += (Math.random() - 0.5) * 0.06;
+      p.vy += (Math.random() - 0.5) * 0.06;
 
       let targetX = mx;
       let targetY = my;
-      let attractStrength = 0.008;
+      let attractStrength = 0.006;
 
       if (this.hoverTarget) {
         const hdx = this.hoverTarget.x - mx;
@@ -91,16 +91,16 @@ class ParticleBackground {
         if (hdist > 1) {
           targetX = mx + hdx * 0.3;
           targetY = my + hdy * 0.3;
-          attractStrength = 0.016;
+          attractStrength = 0.012;
         }
       }
 
       const dx = targetX - p.x;
       const dy = targetY - p.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 350 && dist > 0) {
-        p.vx += (dx / dist) * attractStrength * (350 - dist) / 350;
-        p.vy += (dy / dist) * attractStrength * (350 - dist) / 350;
+      if (dist < 300 && dist > 0) {
+        p.vx += (dx / dist) * attractStrength * (300 - dist) / 300;
+        p.vy += (dy / dist) * attractStrength * (300 - dist) / 300;
       }
 
       p.x += p.vx;
@@ -109,7 +109,7 @@ class ParticleBackground {
       if (p.x < 0 || p.x > w) p.vx *= -1;
       if (p.y < 0 || p.y > h) p.vy *= -1;
 
-      p.vx *= 0.96;
+      p.vx *= 0.97;
       p.vy *= 0.97;
     }
   }
@@ -138,8 +138,8 @@ class ParticleBackground {
       }
     }
 
-    ctx.shadowColor = 'rgba(255, 106, 0, 0.8)';
-    ctx.shadowBlur = 12;
+    ctx.shadowColor = 'rgba(255, 106, 0, 0.6)';
+    ctx.shadowBlur = 8;
     ctx.fillStyle = '#ff6a00';
     for (const p of this.particles) {
       ctx.beginPath();
