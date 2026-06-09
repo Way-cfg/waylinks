@@ -2,14 +2,13 @@ class ParticleBackground {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    if (!this.ctx) return;
     this.particles = [];
     this.mouse = { x: -1000, y: -1000 };
     this.hoverTarget = null;
     this.rafId = null;
     this.boundResize = this.resize.bind(this);
     this.boundMove = this.onMouseMove.bind(this);
-
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     this.init();
   }
@@ -44,7 +43,7 @@ class ParticleBackground {
         y: Math.random() * this.canvas.height,
         vx: (Math.random() - 0.5) * 0.4,
         vy: (Math.random() - 0.5) * 0.4,
-        r: Math.random() * 2.5 + 1
+        r: Math.random() * 3 + 1.5
       });
     }
   }
@@ -141,7 +140,7 @@ class ParticleBackground {
     }
 
     ctx.shadowColor = 'rgba(255, 106, 0, 0.6)';
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 12;
     ctx.fillStyle = '#ff6a00';
     for (const p of this.particles) {
       ctx.beginPath();
@@ -153,12 +152,10 @@ class ParticleBackground {
 
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const canvas = document.getElementById('particle-bg');
-  if (canvas) {
-    new ParticleBackground(canvas);
-  }
-});
+const canvas = document.getElementById('particle-bg');
+if (canvas) {
+  new ParticleBackground(canvas);
+}
 
 // Card 3D tilt
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
