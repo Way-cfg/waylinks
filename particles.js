@@ -9,7 +9,6 @@ class ParticleBackground {
     this.rafId = null;
     this.boundResize = this.resize.bind(this);
     this.boundMove = this.onMouseMove.bind(this);
-
     this.init();
   }
 
@@ -35,17 +34,24 @@ class ParticleBackground {
   }
 
   createParticles() {
-    const count = Math.min(160, Math.floor((window.innerWidth * window.innerHeight) / 8000));
+    const count = Math.min(55, Math.floor((window.innerWidth * window.innerHeight) / 22000));
     this.particles = [];
     for (let i = 0; i < count; i++) {
-      this.particles.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * this.canvas.height,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        r: Math.random() * 3 + 1.5
-      });
+      this.particles.push(this.createEmber());
     }
+  }
+
+  createEmber() {
+    return {
+      x: Math.random() * this.canvas.width,
+      y: Math.random() * this.canvas.height,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: -(Math.random() * 0.35 + 0.1),
+      r: Math.random() * 3.5 + 2.5,
+      alpha: Math.random() * 0.4 + 0.6,
+      phase: Math.random() * Math.PI * 2,
+      hue: Math.random() * 35 + 15
+    };
   }
 
   onMouseMove(e) {
@@ -78,40 +84,46 @@ class ParticleBackground {
     const my = this.mouse.y;
 
     for (const p of this.particles) {
-      p.vx += (Math.random() - 0.5) * 0.06;
-      p.vy += (Math.random() - 0.5) * 0.06;
+      p.phase += 0.025;
+      p.vx += Math.sin(p.phase) * 0.012;
+      p.vy -= 0.002;
 
-      let targetX = mx;
-      let targetY = my;
-      let attractStrength = 0.006;
-
-      if (this.hoverTarget) {
-        const hdx = this.hoverTarget.x - mx;
-        const hdy = this.hoverTarget.y - my;
-        const hdist = Math.sqrt(hdx * hdx + hdy * hdy);
-        if (hdist > 1) {
-          targetX = mx + hdx * 0.3;
-          targetY = my + hdy * 0.3;
-          attractStrength = 0.012;
-        }
+      const dx = mx - p.x;
+      const dy = my - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 350 && dist > 0) {
+        const strength = 0.004 * (350 - dist) / 350;
+        p.vx += (dx / dist) * strength;
+        p.vy += (dy / dist) * strength;
       }
 
-      const dx = targetX - p.x;
-      const dy = targetY - p.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 300 && dist > 0) {
-        p.vx += (dx / dist) * attractStrength * (300 - dist) / 300;
-        p.vy += (dy / dist) * attractStrength * (300 - dist) / 300;
+      if (this.hoverTarget) {
+        const hdx = this.hoverTarget.x - p.x;
+        const hdy = this.hoverTarget.y - p.y;
+        const hdist = Math.sqrt(hdx * hdx + hdy * hdy);
+        if (hdist < 350 && hdist > 0) {
+          const strength = 0.012 * (350 - hdist) / 350;
+          p.vx += (hdx / hdist) * strength;
+          p.vy += (hdy / hdist) * strength;
+        }
       }
 
       p.x += p.vx;
       p.y += p.vy;
 
-      if (p.x < 0 || p.x > w) p.vx *= -1;
-      if (p.y < 0 || p.y > h) p.vy *= -1;
-
       p.vx *= 0.97;
       p.vy *= 0.97;
+
+      if (p.y < -30) {
+        Object.assign(p, this.createEmber());
+        p.y = h + 20;
+      }
+      if (p.x < -40) p.x = w + 20;
+      if (p.x > w + 40) p.x = -20;
+      if (p.y > h + 40) {
+        Object.assign(p, this.createEmber());
+        p.y = -20;
+      }
     }
   }
 
@@ -121,32 +133,31 @@ class ParticleBackground {
     const h = this.canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    ctx.strokeStyle = 'rgba(255, 106, 0, 0.3)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < this.particles.length; i++) {
-      for (let j = i + 1; j < this.particles.length; j++) {
-        const a = this.particles[i];
-        const b = this.particles[j];
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-      }
-    }
-
-    ctx.shadowColor = 'rgba(255, 106, 0, 0.6)';
-    ctx.shadowBlur = 12;
-    ctx.fillStyle = '#ff6a00';
     for (const p of this.particles) {
+      const pulse = 0.5 + 0.5 * Math.sin(p.phase);
+      const alpha = p.alpha * (0.6 + 0.4 * pulse);
+
+      ctx.shadowColor = `hsla(${p.hue}, 100%, 55%, ${alpha * 0.6})`;
+      ctx.shadowBlur = 25;
+
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+      ctx.fill();
+
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * 0.55, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue + 10}, 100%, 80%, ${alpha})`;
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * 0.25, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(45, 100%, 92%, ${alpha})`;
       ctx.fill();
     }
+
     ctx.shadowBlur = 0;
   }
 
@@ -157,7 +168,6 @@ if (canvas) {
   new ParticleBackground(canvas);
 }
 
-// Card 3D tilt
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
   document.querySelectorAll('.card').forEach(card => {
     let ticking = false;
