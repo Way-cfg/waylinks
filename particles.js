@@ -1,130 +1,189 @@
-(function() {
-  var canvas = document.getElementById('particle-bg');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  if (!ctx) return;
+class ParticleBackground {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.particles = [];
+    this.mouse = { x: -1000, y: -1000 };
+    this.hoverTarget = null;
+    this.rafId = null;
+    this.boundResize = this.resize.bind(this);
+    this.boundMove = this.onMouseMove.bind(this);
 
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    this.init();
   }
-  resize();
-  window.addEventListener('resize', resize);
 
-  var particles = [];
-  var count = Math.min(60, Math.floor((window.innerWidth * window.innerHeight) / 20000));
-  for (var i = 0; i < count; i++) {
-    particles.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: -(Math.random() * 0.35 + 0.12),
-      r: Math.random() * 3.5 + 2.5,
-      phase: Math.random() * Math.PI * 2,
-      hue: Math.random() * 35 + 15
+  init() {
+    this.resize();
+    window.addEventListener('resize', this.boundResize);
+    document.addEventListener('pointermove', this.boundMove);
+    this.addCardListeners();
+    this.createParticles();
+    this.animate();
+  }
+
+  addCardListeners() {
+    document.querySelectorAll('.card').forEach(el => {
+      el.addEventListener('mouseenter', (e) => this.onCardHover(e));
+      el.addEventListener('mouseleave', () => this.onCardLeave());
     });
   }
 
-  var mouseX = -1000;
-  var mouseY = -1000;
-  document.addEventListener('pointermove', function(e) {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
+  resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
 
-  function animate() {
-    requestAnimationFrame(animate);
-    var w = canvas.width;
-    var h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
+  createParticles() {
+    const count = Math.min(160, Math.floor((window.innerWidth * window.innerHeight) / 8000));
+    this.particles = [];
+    for (let i = 0; i < count; i++) {
+      this.particles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2.5 + 1
+      });
+    }
+  }
 
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      p.phase += 0.025;
-      p.vx += Math.sin(p.phase) * 0.012;
-      p.vy -= 0.003;
+  onMouseMove(e) {
+    this.mouse.x = e.clientX;
+    this.mouse.y = e.clientY;
+  }
 
-      var dx = mouseX - p.x;
-      var dy = mouseY - p.y;
-      var dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 350 && dist > 0) {
-        var strength = 0.004 * (350 - dist) / 350;
-        p.vx += (dx / dist) * strength;
-        p.vy += (dy / dist) * strength;
+  onCardHover(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    this.hoverTarget = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+  }
+
+  onCardLeave() {
+    this.hoverTarget = null;
+  }
+
+  animate() {
+    this.rafId = requestAnimationFrame(() => this.animate());
+    this.update();
+    this.draw();
+  }
+
+  update() {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    const mx = this.mouse.x;
+    const my = this.mouse.y;
+
+    for (const p of this.particles) {
+      p.vx += (Math.random() - 0.5) * 0.06;
+      p.vy += (Math.random() - 0.5) * 0.06;
+
+      let targetX = mx;
+      let targetY = my;
+      let attractStrength = 0.006;
+
+      if (this.hoverTarget) {
+        const hdx = this.hoverTarget.x - mx;
+        const hdy = this.hoverTarget.y - my;
+        const hdist = Math.sqrt(hdx * hdx + hdy * hdy);
+        if (hdist > 1) {
+          targetX = mx + hdx * 0.3;
+          targetY = my + hdy * 0.3;
+          attractStrength = 0.012;
+        }
+      }
+
+      const dx = targetX - p.x;
+      const dy = targetY - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 300 && dist > 0) {
+        p.vx += (dx / dist) * attractStrength * (300 - dist) / 300;
+        p.vy += (dy / dist) * attractStrength * (300 - dist) / 300;
       }
 
       p.x += p.vx;
       p.y += p.vy;
 
+      if (p.x < 0 || p.x > w) p.vx *= -1;
+      if (p.y < 0 || p.y > h) p.vy *= -1;
+
       p.vx *= 0.97;
       p.vy *= 0.97;
+    }
+  }
 
-      if (p.y < -30 || p.x < -40 || p.x > w + 40) {
-        p.x = Math.random() * w;
-        p.y = h + 20;
-        p.vx = (Math.random() - 0.5) * 0.25;
-        p.vy = -(Math.random() * 0.35 + 0.12);
-        p.r = Math.random() * 3.5 + 2.5;
-        p.hue = Math.random() * 35 + 15;
+  draw() {
+    const ctx = this.ctx;
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.strokeStyle = 'rgba(255, 106, 0, 0.3)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < this.particles.length; i++) {
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const a = this.particles[i];
+        const b = this.particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
       }
-      if (p.y > h + 40) {
-        p.y = -10;
-        p.vy = -(Math.random() * 0.35 + 0.12);
-      }
-
-      var pulse = 0.5 + 0.5 * Math.sin(p.phase);
-      var fade = 1 - Math.max(0, p.y) / h;
-      var alpha = (0.6 + 0.4 * pulse) * (0.6 + 0.4 * Math.max(0, fade));
-
-      ctx.shadowColor = 'hsla(' + p.hue + ', 100%, 55%, ' + (alpha * 0.6) + ')';
-      ctx.shadowBlur = 25;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'hsla(' + p.hue + ', 100%, 60%, ' + alpha + ')';
-      ctx.fill();
-
-      ctx.shadowBlur = 0;
-
-      ctx.beginPath();
-      ctx.arc(p.x - p.r * 0.15, p.y - p.r * 0.15, p.r * 0.35, 0, Math.PI * 2);
-      ctx.fillStyle = 'hsla(' + (p.hue + 10) + ', 100%, 82%, ' + (alpha * 0.9) + ')';
-      ctx.fill();
     }
 
+    ctx.shadowColor = 'rgba(255, 106, 0, 0.6)';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#ff6a00';
+    for (const p of this.particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.shadowBlur = 0;
   }
 
-  animate();
-})();
+}
 
-(function() {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var cards = document.querySelectorAll('.card');
-  for (var i = 0; i < cards.length; i++) {
-    (function(card) {
-      var ticking = false;
-      card.addEventListener('mousemove', function(e) {
-        if (!ticking) {
-          requestAnimationFrame(function() {
-            var rect = card.getBoundingClientRect();
-            var x = e.clientX - rect.left;
-            var y = e.clientY - rect.top;
-            var cx = rect.width / 2;
-            var cy = rect.height / 2;
-            var rx = ((y - cy) / cy) * -5;
-            var ry = ((x - cx) / cx) * 5;
-            card.style.transition = 'transform 0.05s';
-            card.style.transform = 'perspective(600px) translateY(-3px) scale(1.02) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
-            ticking = false;
-          });
-          ticking = true;
-        }
-      });
-      card.addEventListener('mouseleave', function() {
-        card.style.transition = '';
-        card.style.transform = '';
-      });
-    })(cards[i]);
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('particle-bg');
+  if (canvas) {
+    new ParticleBackground(canvas);
   }
-})();
+});
+
+// Card 3D tilt
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.querySelectorAll('.card').forEach(card => {
+    let ticking = false;
+    card.addEventListener('mousemove', (e) => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          const rx = ((y - cy) / cy) * -5;
+          const ry = ((x - cx) / cx) * 5;
+          card.style.transition = 'transform 0.05s';
+          card.style.transform = `perspective(600px) translateY(-3px) scale(1.02) rotateX(${rx}deg) rotateY(${ry}deg)`;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = '';
+      card.style.transform = '';
+    });
+  });
+}
